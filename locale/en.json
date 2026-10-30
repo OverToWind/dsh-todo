@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "To-dos",
+    "description": "A to-do button in the session header that opens a floating card for adding, ticking off and deleting to-do items."
+  }
+}
