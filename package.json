@@ -1,9 +1,25 @@
 {
   "name": "dsh-todo",
   "version": "1.0.0",
-  "private": true,
+  "description": "A to-do list button in the DSH session header: rotating pending items tinted by urgency, plus a floating panel to add, edit and tick off tasks.",
   "type": "module",
-  "description": "A to-do list button in the DSH session header.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OverToWind/dsh-todo.git"
+  },
+  "homepage": "https://github.com/OverToWind/dsh-todo#readme",
+  "bugs": {
+    "url": "https://github.com/OverToWind/dsh-todo/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "cordis",
+    "todo",
+    "task-list"
+  ],
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
@@ -15,7 +31,8 @@
     "client.js",
     "cordis.patch.yml",
     "locale",
-    "icon.svg"
+    "icon.svg",
+    "assets"
   ],
   "dsh": {
     "bundle": {

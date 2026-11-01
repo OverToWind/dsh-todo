@@ -1,55 +1,84 @@
 # dsh-todo
 
-一个 DSH（DeepSeek Harness）桌面端插件：在会话标题栏的按钮组最左侧放一枚待办按钮，点开即是一个常驻的待办卡片。
+<img src="assets/icon-180.png" width="72" height="72" alt="dsh-todo icon" align="left" hspace="12" vspace="4">
 
-- 按钮轮播显示未办事项（只轮播未完成的，4 秒切换，悬停或展开时暂停）
-- 按紧急度整块着色：逾期红 / 24 小时内黄 / 稍后绿 / 全部完成中性
-- 卡片内新增、编辑（文字 + 截止时间）、勾选完成、删除、清除已完成
-- 按紧急度排序，已完成收进可展开的「已完成 n 项」折叠区
-- 快捷截止时间：今天 18:00 / 明天 09:00，也可手选或「不限时间」
-- 数据存在浏览器 `localStorage`（`dsh-todo.items.v1`），刷新不丢
-- 跟随 DSH 主题（只用 `--dsw-alias-*` token），中英文自动切换
+A to-do list for DeepSeek Harness (DSH): one button in the session header, one floating panel
+behind it. Ships as a Cordis bundle plugin for the DSH web UI.
 
-## 安装
+<br clear="left">
 
-插件是一个 Cordis bundle，安装到当前 DSH profile：
+## Features
+
+- **Header ticker** — the button cycles through unfinished items every 4 s and pauses while hovered
+  or while the panel is open. Completed items never enter the rotation.
+- **Urgency tinting** — the whole button is tinted by due time: overdue red, within 24 h amber,
+  later green, everything done neutral. The same colours mark each row in the panel.
+- **Persistent panel** — add, edit (text and deadline), tick off, delete, clear completed. Rows are
+  sorted by urgency, and the finished ones collapse into a `Done (n)` section.
+- **Quick deadlines** — `Today` / `Tomorrow` chips (18:00 today, 09:00 tomorrow), a datetime picker,
+  or no deadline at all.
+- **Local persistence** — items live in `localStorage` (`dsh-todo.items.v1`), so a reload keeps them.
+- **Theme-native** — every colour is a `--dsw-alias-*` token, so light and dark follow DSH. UI text is
+  English or Chinese depending on the host locale.
+
+## Install
 
 ```bash
-# 在 DSH 会话里调用（或在 profile 上用 plugin_manager 工具）
-plugin_manager action=install_bundle target=<本仓库绝对路径>
+# from GitHub
+dsh plugin --profile <profile> add github:OverToWind/dsh-todo
 ```
 
-本地开发时用 `link:` 依赖安装，改完文件后在 `plugin_manager` 里把插件禁用再启用即可热重载；重新打包的分支需要刷新页面。
+Or, inside a DSH session, install a local clone with
+`plugin_manager action=install_bundle target=<path to a local clone>`.
+Restart or refresh after installing. The plugin registers no host-side services; the client half
+owns all rendering.
 
-## 目录
+## Mount points
 
-```
-client.js                 客户端一半：按钮 + 面板（渲染、样式、store）
-index.js                  Host 一半（本插件为空）
-cordis.patch.yml          bundle 插入声明（entry id: dsh-todo）
-package.json              包元数据 + dsh.bundle / dsh.client 声明
-locale/en.json, zh.json   插件元数据（标题、描述）
-icon.svg                  插件图标
-scripts/verify-render.mjs 离线渲染检查（无需浏览器）
-```
-
-## 挂载点
-
-| 用途 | Slot | id | order |
+| Purpose | Slot | id | order |
 | --- | --- | --- | --- |
-| 标题栏按钮 | `conversation.session.header.utilities` | `dsh-todo:button` | -20 |
-| 浮层卡片 | `shell.overlay` | `dsh-todo:panel` | 900 |
+| Header button | `conversation.session.header.utilities` | `dsh-todo:button` | -20 |
+| Floating panel | `shell.overlay` | `dsh-todo:panel` | 900 |
 
-`shell.overlay` 本身是点击穿透的浮层，所以卡片显式 `pointer-events: auto`。
+`shell.overlay` is a click-through layer, so the card opts back into pointer events explicitly.
 
-## 验证
+## Layout
 
-没有浏览器也能跑一遍渲染断言（stub 掉 window/document/localStorage 与一个迷你 React）：
+```
+client.js                  client half: store, button, panel, styles
+index.js                   host half (empty for this plugin)
+cordis.patch.yml           bundle insert declaration (entry id: dsh-todo)
+package.json               package metadata + dsh.bundle / dsh.client
+locale/en.json, zh.json    plugin display metadata
+icon.svg, assets/          artwork (SVG source + 180x180 PNG for storefronts)
+scripts/verify-render.mjs  headless render assertions
+scripts/make-icon.py       regenerates assets/icon-180.png from the icon geometry
+```
+
+## Verify
+
+No browser required — the harness stubs `window`/`document`/`localStorage` plus a minimal React and
+asserts the rendered trees:
 
 ```bash
 node --check client.js
-node scripts/verify-render.mjs      # 40 checks
+node scripts/verify-render.mjs     # 40 checks
 ```
+
+## 中文说明
+
+DSH 会话标题栏里的待办清单：
+
+- **按钮轮播**：每 4 秒切换一条未完成事项，鼠标悬停或面板展开时暂停，已完成的不参与轮播。
+- **紧急度着色**：逾期红、24 小时内黄、稍后绿、全部完成时中性；面板里的每一行同样着色。
+- **常驻面板**：新增、编辑（文字与截止时间）、勾选、删除、清除已完成；按紧急度排序，已完成收进
+  「已完成 n 项」折叠区。
+- **快捷截止时间**：「今天」18:00、「明天」09:00、手选时间，或「不限时间」。
+- **本地持久化**：数据存在 `localStorage`（`dsh-todo.items.v1`），刷新不丢。
+- **跟随主题**：只使用 `--dsw-alias-*` token，中英文按宿主语言自动切换。
+
+安装：`dsh plugin --profile <profile> add github:OverToWind/dsh-todo`，或在 DSH 会话里用
+`plugin_manager action=install_bundle target=<本地仓库路径>`。
 
 ## License
 
